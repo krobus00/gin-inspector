@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -87,7 +88,7 @@ func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.
 			start := time.Now()
 			var bodyBytes []byte
 
-			if c.Request.Form == nil {
+			if strings.EqualFold(c.Request.Header.Get("Content-Type"), "application/json") {
 				bodyBytes, _ = io.ReadAll(c.Request.Body)
 				c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			}

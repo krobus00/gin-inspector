@@ -8,13 +8,10 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Jekyll v3.8.5">
     <title>{{.title}}</title>
-
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
         integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,500,700" rel="stylesheet">
-
-
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -35,7 +32,6 @@
             font-size: 13px;
             font-weight: 500;
             color: #607d8b;
-
         }
 
         .table td,
@@ -62,8 +58,6 @@
             font-weight: 500;
         }
 
-
-
         .btn-detail {
             font-size: 13px;
             font-weight: 500;
@@ -75,7 +69,6 @@
         .btn-detail:hover,
         .btn-detail:active {
             background-color: #4dd0e1 !important;
-
         }
 
         .badge-200 {
@@ -150,14 +143,8 @@
             <div style="display: inline-block;margin-top: 10px;margin-left: 10px;">Inspector</div>
         </a>
     </nav>
-
-
     <main role="main" class="container">
-
-
-
         <div class="my-3 p-4 bg-white rounded shadow-sm">
-
             <table class="table m-0">
                 <thead>
                     <tr>
@@ -176,16 +163,13 @@
                         <td>
                             <span class="badge badge-secondary badge-{{$value.HttpStatus}}">{{ $value.HttpStatus
                                 }}</span>
-
                         </td>
-                        <td>{{$value.RequestedAt | formatDate }}</td>
+                        <td>{{$value.RequestedAt | inspectorFormatDate }}</td>
                         <td>
-
                             <button type="button" class="btn btn-primary btn-detail" data-toggle="modal"
                                 data-target="#modal-{{$i}}">
                                 Detail
                             </button>
-
                             <div class="modal fade" id="modal-{{$i}}" tabindex="-1" role="dialog"
                                 aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                                 <div class="container">
@@ -201,7 +185,6 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body p-4">
-
                                                 <ul class="nav nav-tabs mb-4">
                                                     <li class="nav-item">
                                                         <a class="nav-link active" data-toggle="tab"
@@ -211,12 +194,9 @@
                                                         <a class="nav-link" data-toggle="tab"
                                                             href="#modal-{{$i}}-tab2">Headers</a>
                                                     </li>
-
                                                 </ul>
-
                                                 <!-- Tab panes -->
                                                 <div class="tab-content">
-
                                                     <div id="modal-{{$i}}-tab1" class="tab-pane active">
                                                         {{ if .GetParams }}
                                                         <h3>Query Parameters</h3>
@@ -225,23 +205,23 @@
                                                                 <tr>
                                                                     <th scope="col">Key</th>
                                                                     <th scope="col">Value</th>
-
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-
                                                                 {{ range $key, $value := .GetParams}}
                                                                 <tr>
                                                                     <th scope="row">{{$key}}</th>
                                                                     <td>{{$value}}</td>
-
                                                                 </tr>
                                                                 {{end}}
-
                                                             </tbody>
                                                         </table>
                                                         {{end}}
-
+                                                        {{ if .Body }}
+                                                        <h3>Request Body</h3>
+                                                        <textarea class="form-control" rows="5"
+                                                            readonly>{{.Body}}</textarea>
+                                                        {{end}}
                                                         {{ if .PostParams }}
                                                         <h3>Post Parameters</h3>
                                                         <table class="table table-hover">
@@ -249,7 +229,6 @@
                                                                 <tr>
                                                                     <th scope="col">Key</th>
                                                                     <th scope="col">Value</th>
-
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -257,18 +236,12 @@
                                                                 <tr>
                                                                     <th scope="row">{{$key}}</th>
                                                                     <td>{{$value}}</td>
-
                                                                 </tr>
                                                                 {{end}}
-
                                                             </tbody>
                                                         </table>
                                                         {{end}}
-
                                                         {{ if .PostMultipart }}
-
-
-
                                                         {{if .PostMultipart.File}}
                                                         <h3>Post Multipart Files</h3>
                                                         <table class="table table-hover">
@@ -276,7 +249,6 @@
                                                                 <tr>
                                                                     <th scope="col">Key</th>
                                                                     <th scope="col">Value</th>
-
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -284,68 +256,45 @@
                                                                 <tr>
                                                                     <th scope="row">{{$key}}</th>
                                                                     <td>{{$value}}</td>
-
                                                                 </tr>
                                                                 {{end}}
-
                                                             </tbody>
                                                         </table>
                                                         {{end}}
-
-
                                                         {{ end }}
-
-
-
-
-
                                                     </div>
                                                     <div id="modal-{{$i}}-tab2" class="tab-pane fade">
-
                                                         <h3>Headers</h3>
-                                                        <table class="table table-hover">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th scope="col">Key</th>
-                                                                    <th scope="col">Value</th>
-
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {{ range $key, $value := .Headers}}
-                                                                <tr>
-                                                                    <th scope="row">{{$key}}</th>
-                                                                    <td>{{$value}}</td>
-
-                                                                </tr>
-                                                                {{end}}
-
-                                                            </tbody>
-                                                        </table>
-
+                                                        <div class="table-responsive">
+                                                            <table class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th scope="col">Key</th>
+                                                                        <th scope="col">Value</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {{ range $key, $value := .Headers}}
+                                                                    <tr>
+                                                                        <th scope="row">{{$key}}</th>
+                                                                        <td>{{$value}}</td>
+                                                                    </tr>
+                                                                    {{end}}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
-
                                                 </div>
-
-
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                         </td>
-
-
                     </tr>
-
                     {{ end }}
-
                 </tbody>
             </table>
-
-
             <nav aria-label="...">
                 <ul class="pagination mt-3 mb-0">
                     {{ if .pagination.HasPrev }}
@@ -361,7 +310,6 @@
                 </ul>
             </nav>
         </div>
-
         </div>
     </main>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -373,7 +321,6 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
         integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
         crossorigin="anonymous"></script>
-    <script>
-    </script>
+    <script></script>
 
 </html>

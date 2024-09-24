@@ -1,6 +1,8 @@
 package inspector
 
 import (
+	"bytes"
+	"io"
 	"math"
 	"strconv"
 	"time"
@@ -21,21 +23,22 @@ type Pagination struct {
 }
 
 type RequestStat struct {
-	RequestedAt   time.Time   `json:"requested_at"`
-	RequestUrl    string      `json:"request_url"`
-	HttpMethod    string      `json:"http_method"`
-	HttpStatus    int         `json:"http_status"`
-	ContentType   string      `json:"content_type"`
-	GetParams     interface{} `json:"get_params"`
-	PostParams    interface{} `json:"post_params"`
-	PostMultipart interface{} `json:"post_multipart"`
-	ClientIP      string      `json:"client_ip"`
-	Cookies       interface{} `json:"cookies"`
-	Headers       interface{} `json:"headers"`
+	RequestedAt   time.Time `json:"requested_at"`
+	RequestUrl    string    `json:"request_url"`
+	HttpMethod    string    `json:"http_method"`
+	HttpStatus    int       `json:"http_status"`
+	ContentType   string    `json:"content_type"`
+	GetParams     any       `json:"get_params"`
+	PostParams    any       `json:"post_params"`
+	PostMultipart any       `json:"post_multipart"`
+	Body          any       `json:"body"`
+	ClientIP      string    `json:"client_ip"`
+	Cookies       any       `json:"cookies"`
+	Headers       any       `json:"headers"`
 }
 
 type AllRequests struct {
-	Requets []RequestStat `json:"requests"`
+	Request []RequestStat `json:"requests"`
 }
 
 var allRequests = AllRequests{}
@@ -45,16 +48,15 @@ func GetPaginator() Pagination {
 	return pagination
 }
 
-func InspectorStats() gin.HandlerFunc {
+func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		urlPath := c.Request.URL.Path
 
-		if urlPath == "/_inspector" {
-
+		if urlPath == inspectorEndpoint {
 			page, _ := strconv.ParseFloat(c.DefaultQuery("page", "1"), 64)
 			perPage, _ := strconv.ParseFloat(c.DefaultQuery("per_page", "20"), 64)
-			total := float64(len(allRequests.Requets))
+			total := float64(len(allRequests.Request))
 			totalPage := math.Ceil(total / perPage)
 			offset := (page - 1) * perPage
 
@@ -68,7 +70,7 @@ func InspectorStats() gin.HandlerFunc {
 			pagination.PerPage = int(perPage)
 			pagination.TotalPage = int(totalPage)
 			pagination.Total = int(total)
-			pagination.Data = paginate(allRequests.Requets, int(offset), int(perPage))
+			pagination.Data = paginate(allRequests.Request, int(offset), int(perPage))
 
 			if pagination.CurrentPage > 1 {
 				pagination.HasPrev = true
@@ -83,9 +85,15 @@ func InspectorStats() gin.HandlerFunc {
 		} else {
 
 			start := time.Now()
+			var bodyBytes []byte
+
+			if c.Request.Form == nil {
+				bodyBytes, _ = io.ReadAll(c.Request.Body)
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			}
 
 			c.Request.ParseForm()
-			c.Request.ParseMultipartForm(10000)
+			c.Request.ParseMultipartForm(multipartFormMaxMemory)
 
 			request := RequestStat{
 				RequestedAt:   start,
@@ -98,10 +106,11 @@ func InspectorStats() gin.HandlerFunc {
 				GetParams:     c.Request.URL.Query(),
 				PostParams:    c.Request.PostForm,
 				PostMultipart: c.Request.MultipartForm,
+				Body:          string(bodyBytes),
 				ClientIP:      c.ClientIP(),
 			}
 
-			allRequests.Requets = append([]RequestStat{request}, allRequests.Requets...)
+			allRequests.Request = append([]RequestStat{request}, allRequests.Request...)
 
 		}
 

@@ -10,7 +10,7 @@ Gin middleware for investigating http request.
 
 
 ```sh
-$ go get github.com/krobus00/gin-inspector@v1.0.0
+$ go get github.com/krobus00/gin-inspector@v1.1.0
 ```
 
 ### Html Template
@@ -27,23 +27,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func formatDate(t time.Time) string {
-	return t.Format(time.RFC822)
-}
-
 func main() {
 	r := gin.Default()
 	r.Delims("{{", "}}")
 
 	r.SetFuncMap(template.FuncMap{
-		"formatDate": formatDate,
+		"inspectorFormatDate": func(t time.Time) string {
+			return t.Format(time.RFC822)
+		},
 	})
 
 	r.LoadHTMLFiles("inspector.html")
 	debug := true
 
 	if debug {
-		r.Use(inspector.InspectorStats())
+		r.Use(inspector.InspectorStats(/_inspector, 10000))
 
 		r.GET("/_inspector", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "inspector.html", map[string]interface{}{
@@ -56,5 +54,6 @@ func main() {
 
 	r.Run(":8080")
 }
+
 
 ```

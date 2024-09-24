@@ -51,12 +51,10 @@ func GetPaginator() Pagination {
 
 func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		urlPath := c.Request.URL.Path
-
 		if urlPath == inspectorEndpoint {
 			page, _ := strconv.ParseFloat(c.DefaultQuery("page", "1"), 64)
-			perPage, _ := strconv.ParseFloat(c.DefaultQuery("per_page", "20"), 64)
+			perPage, _ := strconv.ParseFloat(c.DefaultQuery("per_page", "10"), 64)
 			total := float64(len(allRequests.Request))
 			totalPage := math.Ceil(total / perPage)
 			offset := (page - 1) * perPage
@@ -96,6 +94,8 @@ func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.
 			c.Request.ParseForm()
 			c.Request.ParseMultipartForm(multipartFormMaxMemory)
 
+			c.Next()
+
 			request := RequestStat{
 				RequestedAt:   start,
 				RequestUrl:    urlPath,
@@ -112,11 +112,7 @@ func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.
 			}
 
 			allRequests.Request = append([]RequestStat{request}, allRequests.Request...)
-
 		}
-
-		c.Next()
-
 	}
 }
 

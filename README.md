@@ -1,8 +1,8 @@
 # Gin Inspector
 
-![Gin Inspector HTML Preview](https://raw.githubusercontent.com/fatihkahveci/gin-inspector/master/preview-html.png)
+![Gin Inspector HTML Preview](https://raw.githubusercontent.com/krobus00/gin-inspector/master/assets/preview-html.png)
 
-![Gin Inspector HTML Preview 2](https://raw.githubusercontent.com/fatihkahveci/gin-inspector/master/preview-html-2.jpg)
+![Gin Inspector HTML Preview 2](https://raw.githubusercontent.com/krobus00/gin-inspector/master/assets/preview-html-2.jpg)
 
 Gin middleware for investigating http request.
 
@@ -10,32 +10,7 @@ Gin middleware for investigating http request.
 
 
 ```sh
-$ go get github.com/fatihkahveci/gin-inspector
-```
-
-### JSON Response
-
-```
-package main
-
-import (
-	"github.com/fatihkahveci/gin-inspector"
-	"github.com/gin-gonic/gin"
-)
-
-func main() {
-	r := gin.Default()
-	debug := true
-
-	if debug {
-		r.Use(inspector.InspectorStats())
-		r.GET("/_inspector", func(c *gin.Context) {
-			c.JSON(200, inspector.GetPaginator())
-		})
-	}
-
-	r.Run()
-}
+$ go get github.com/krobus00/gin-inspector@v1.0.0
 ```
 
 ### Html Template
@@ -48,7 +23,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fatihkahveci/gin-inspector"
+	"github.com/krobus00/gin-inspector"
 	"github.com/gin-gonic/gin"
 )
 

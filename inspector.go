@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 )
 
 type Pagination struct {
@@ -49,7 +50,41 @@ func GetPaginator() Pagination {
 	return pagination
 }
 
-func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.HandlerFunc {
+func removeSensitiveData(jsonStr string, sensitiveKeys []string) (string, error) {
+	var data map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
+		return "", err
+	}
+	cleanData(data, sensitiveKeys)
+	cleanedJSON, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	return string(cleanedJSON), nil
+}
+
+func cleanData(data map[string]interface{}, sensitiveKeys []string) {
+	for key, value := range data {
+		for _, sensitiveKey := range sensitiveKeys {
+			if strings.EqualFold(key, sensitiveKey) {
+				data[key] = "REDACTED"
+			}
+		}
+		if nestedMap, ok := value.(map[string]interface{}); ok {
+			cleanData(nestedMap, sensitiveKeys)
+		}
+		if nestedArray, ok := value.([]interface{}); ok {
+			for _, item := range nestedArray {
+				if itemMap, ok := item.(map[string]interface{}); ok {
+					cleanData(itemMap, sensitiveKeys)
+				}
+			}
+		}
+	}
+}
+
+func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64, sensitiveKeys []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		urlPath := c.Request.URL.Path
 		if urlPath == inspectorEndpoint {
@@ -84,10 +119,12 @@ func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.
 		} else {
 
 			start := time.Now()
-			var bodyBytes []byte
+			var logBody []byte
 
 			if strings.EqualFold(c.Request.Header.Get("Content-Type"), "application/json") {
-				bodyBytes, _ = io.ReadAll(c.Request.Body)
+				bodyBytes, _ := io.ReadAll(c.Request.Body)
+				safeStr, _ := removeSensitiveData(string(bodyBytes), sensitiveKeys)
+				logBody = []byte(safeStr)
 				c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			}
 
@@ -107,7 +144,7 @@ func InspectorStats(inspectorEndpoint string, multipartFormMaxMemory int64) gin.
 				GetParams:     c.Request.URL.Query(),
 				PostParams:    c.Request.PostForm,
 				PostMultipart: c.Request.MultipartForm,
-				Body:          string(bodyBytes),
+				Body:          string(logBody),
 				ClientIP:      c.ClientIP(),
 			}
 
